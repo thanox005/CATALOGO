@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catálogo</title>
+<style>
+  :root { --bg:#fbf7f4; --txt:#2b2226; --muted:#7a6a70; --cor:#c9868f; --card:#ffffff; }
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--txt); transition: background .6s ease, color .6s ease; min-height:100vh; }
+  header.capa { text-align:center; padding: 60px 20px 30px; }
+  header.capa h1 { font-family: Georgia, serif; font-size: clamp(2rem, 6vw, 3.4rem); letter-spacing: 2px; animation: sobe 1s ease both; }
+  header.capa p { color: var(--muted); margin-top: 8px; animation: sobe 1.3s ease both; }
+  nav.indice { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; padding: 12px 16px 24px; position: sticky; top:0; background: var(--bg); z-index: 10; }
+  nav.indice button { border:none; border-radius:999px; padding:10px 18px; font-size:.95rem; cursor:pointer; background:var(--card); color:var(--txt); box-shadow:0 2px 8px rgba(0,0,0,.07); transition: transform .2s, background .4s, color .4s; }
+  nav.indice button:hover { transform: translateY(-2px); }
+  nav.indice button.ativo { background: var(--cor); color:#fff; }
+  main { max-width: 1100px; margin: 0 auto; padding: 0 16px 60px; }
+  .colecao { animation: entra .6s ease both; }
+  .colecao h2 { font-family: Georgia, serif; color: var(--cor); font-size: 1.8rem; margin: 10px 0 4px; transition: color .6s; }
+  .colecao .sub { color: var(--muted); margin-bottom: 22px; }
+  .grade { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:18px; }
+  .card { background: var(--card); border-radius: 22px; overflow:hidden; box-shadow: 0 6px 18px rgba(0,0,0,.07); cursor:pointer; transition: transform .3s, box-shadow .3s; animation: sobe .5s ease both; }
+  .card:hover { transform: translateY(-6px); box-shadow: 0 14px 28px rgba(0,0,0,.12); }
+  .foto { aspect-ratio: 1/1; background: linear-gradient(135deg, var(--cor), #efe3e6); background-size:cover; background-position:center; }
+  .card .info { padding: 14px 16px 16px; }
+  .card .nome { font-weight:600; }
+  .card .preco { color: var(--cor); font-weight:700; margin-top:4px; }
+  .card .parc { color: var(--muted); font-size:.82rem; margin-top:2px; }
+  .vazio { color: var(--muted); padding: 30px 0; text-align:center; }
+  .modal { position: fixed; inset:0; background: rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:50; }
+  .modal.aberto { display:flex; animation: fade .3s ease both; }
+  .modal .caixa { background:var(--card); color:var(--txt); border-radius:24px; max-width:460px; width:100%; overflow:hidden; animation: sobe .4s ease both; position:relative; }
+  .modal .foto { aspect-ratio: 4/3; }
+  .modal .corpo { padding: 20px 22px 24px; }
+  .modal h3 { font-family: Georgia, serif; font-size:1.4rem; }
+  .modal .preco { color: var(--cor); font-size:1.3rem; font-weight:700; margin: 6px 0; }
+  .modal .parc { color: var(--muted); font-size:.92rem; margin-bottom:6px; }
+  .modal .medidas { color: var(--muted); font-size:.92rem; margin-bottom: 12px; }
+  .modal .desc { line-height:1.5; margin-bottom: 18px; }
+  .modal .fechar { position:absolute; top:12px; right:12px; background:#fff; border:none; border-radius:50%; width:36px; height:36px; font-size:1.2rem; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.15); }
+  .btn-wpp { display:block; text-align:center; background:#25d366; color:#fff; text-decoration:none; padding:14px; border-radius:999px; font-weight:600; transition: transform .2s; }
+  .btn-wpp:hover { transform: scale(1.02); }
+  footer { text-align:center; color: var(--muted); font-size:.85rem; padding: 20px; }
+  @keyframes sobe { from { opacity:0; transform: translateY(18px); } to { opacity:1; transform:none; } }
+  @keyframes entra { from { opacity:0; } to { opacity:1; } }
+  @keyframes fade { from { opacity:0; } to { opacity:1; } }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+
+<header class="capa">
+  <h1 id="titulo-loja">Catálogo</h1>
+  <p>Semijoias com brilho do seu jeito</p>
+</header>
+<nav class="indice" id="indice"></nav>
+<main id="conteudo"></main>
+<footer>Toque em uma peça para ver detalhes</footer>
+
+<div class="modal" id="modal">
+  <div class="caixa">
+    <button class="fechar" id="fechar" aria-label="Fechar">×</button>
+    <div class="foto" id="m-foto"></div>
+    <div class="corpo">
+      <h3 id="m-nome"></h3>
+      <div class="preco" id="m-preco"></div>
+      <div class="parc" id="m-parc"></div>
+      <div class="medidas" id="m-medidas"></div>
+      <p class="desc" id="m-desc"></p>
+      <a class="btn-wpp" id="m-wpp" target="_blank" rel="noopener">Pedir pelo WhatsApp</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const TEMAS = {
+  rose:    { bg: "#fbf7f4", txt: "#2b2226", muted: "#7a6a70", card: "#ffffff", escuro: false },
+  noite:   { bg: "#1d1a1f", txt: "#f5efe6", muted: "#b9aab0", card: "#2a252c", escuro: true },
+  linho:   { bg: "#f4efe6", txt: "#3b3429", muted: "#8a7f6e", card: "#fffdf8", escuro: false },
+  minimal: { bg: "#ffffff", txt: "#111111", muted: "#777777", card: "#f5f5f5", escuro: false }
+};
+const $ = (id) => document.getElementById(id);
+let D = null;
+let colAtiva = 0;
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function valorDoPreco(texto) {
+  const limpo = String(texto || "").replace(/[^\d,.]/g, "").replace(/\./g, "").replace(",", ".");
+  const v = parseFloat(limpo);
+  return isNaN(v) ? null : v;
+}
+function textoParcelas(preco) {
+  const n = parseInt(D.parcelasMax, 10);
+  const v = valorDoPreco(preco);
+  if (!n || n < 2 || v === null) return "";
+  return `ou ${n}x de R$ ${(v / n).toFixed(2).replace(".", ",")} sem juros`;
+}
+function mistura(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const s = (v) => Math.round(v + (255 - v) * 0.88);
+  return `rgb(${s((n >> 16) & 255)}, ${s((n >> 8) & 255)}, ${s(n & 255)})`;
+}
+function aplicarTema() {
+  const t = TEMAS[D.tema] || TEMAS.rose;
+  const r = document.documentElement.style;
+  r.setProperty("--bg", t.bg); r.setProperty("--txt", t.txt);
+  r.setProperty("--muted", t.muted); r.setProperty("--card", t.card);
+  return t;
+}
+
+function renderCatalogo() {
+  if (colAtiva >= D.colecoes.length) colAtiva = 0;
+  $("titulo-loja").textContent = D.loja;
+  document.title = D.loja;
+  const tema = aplicarTema();
+
+  $("indice").innerHTML = D.colecoes.map((c, i) =>
+    `<button data-i="${i}" class="${i === colAtiva ? "ativo" : ""}">${esc(c.nome)}</button>`).join("");
+  $("indice").querySelectorAll("button").forEach(b =>
+    b.onclick = () => { colAtiva = +b.dataset.i; renderCatalogo(); });
+
+  const c = D.colecoes[colAtiva];
+  if (!c) { $("conteudo").innerHTML = `<p class="vazio">Catálogo em breve.</p>`; return; }
+  document.body.style.background = tema.escuro ? tema.bg : mistura(c.cor);
+  document.documentElement.style.setProperty("--cor", c.cor);
+
+  const pecas = c.pecas.length
+    ? c.pecas.map((p, i) => `
+        <div class="card" data-p="${i}" style="animation-delay:${i * 0.08}s">
+          <div class="foto" style="${p.foto ? `background-image:url('${esc(p.foto)}')` : ""}"></div>
+          <div class="info">
+            <div class="nome">${esc(p.nome)}</div>
+            <div class="preco">${esc(p.preco)}</div>
+            <div class="parc">${esc(textoParcelas(p.preco))}</div>
+          </div>
+        </div>`).join("")
+    : `<p class="vazio">Nenhuma peça nesta coleção ainda.</p>`;
+
+  $("conteudo").innerHTML = `
+    <section class="colecao">
+      <h2>${esc(c.nome)}</h2>
+      <p class="sub">${esc(c.descricao)}</p>
+      <div class="grade">${pecas}</div>
+    </section>`;
+  $("conteudo").querySelectorAll(".card").forEach(card =>
+    card.onclick = () => abrirModal(c.pecas[+card.dataset.p], c.nome));
+}
+
+function abrirModal(p, colNome) {
+  $("m-foto").style.backgroundImage = p.foto ? `url('${p.foto}')` : "";
+  $("m-nome").textContent = p.nome;
+  $("m-preco").textContent = p.preco;
+  $("m-parc").textContent = textoParcelas(p.preco);
+  $("m-medidas").textContent = p.medidas ? "Medidas: " + p.medidas : "";
+  $("m-desc").textContent = p.descricao;
+  const numero = (D.whatsapp || "").replace(/\D/g, "");
+  const parc = textoParcelas(p.preco);
+  const msg = encodeURIComponent(`Olá! Tenho interesse na peça "${p.nome}" (${colNome}) - ${p.preco}${parc ? " " + parc : ""}`);
+  $("m-wpp").href = `https://wa.me/${numero}?text=${msg}`;
+  $("modal").classList.add("aberto");
+}
+function fecharModal() { $("modal").classList.remove("aberto"); }
+$("fechar").onclick = fecharModal;
+$("modal").onclick = (e) => { if (e.target.id === "modal") fecharModal(); };
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") fecharModal(); });
+
+// Carrega os dados publicados (dados.json). Cache desligado para mostrar sempre a versão mais nova.
+fetch("dados.json", { cache: "no-store" })
+  .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+  .then(d => { D = d; renderCatalogo(); })
+  .catch(() => {
+    $("conteudo").innerHTML = `<p class="vazio">Não foi possível carregar o catálogo. Tente novamente em instantes.</p>`;
+  });
+</script>
+</body>
+</html>
