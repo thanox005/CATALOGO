@@ -5,46 +5,70 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Catálogo</title>
 <style>
-  :root { --bg:#fbf7f4; --txt:#2b2226; --muted:#7a6a70; --cor:#c9868f; --card:#ffffff; }
+  :root { --bg:#fbf7f4; --txt:#2b2226; --muted:#7a6a70; --cor:#e9a9b8; --card:#ffffff; }
   * { box-sizing: border-box; margin:0; padding:0; }
-  body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--txt); transition: background .6s ease, color .6s ease; min-height:100vh; }
-  header.capa { text-align:center; padding: 60px 20px 30px; }
+  body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--txt); transition: background .7s ease, color .6s ease; min-height:100vh; }
+
+  header.capa { text-align:center; padding: 56px 20px 26px; }
   header.capa h1 { font-family: Georgia, serif; font-size: clamp(2rem, 6vw, 3.4rem); letter-spacing: 2px; animation: sobe 1s ease both; }
   header.capa p { color: var(--muted); margin-top: 8px; animation: sobe 1.3s ease both; }
-  nav.indice { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; padding: 12px 16px 24px; position: sticky; top:0; background: var(--bg); z-index: 10; }
-  nav.indice button { border:none; border-radius:999px; padding:10px 18px; font-size:.95rem; cursor:pointer; background:var(--card); color:var(--txt); box-shadow:0 2px 8px rgba(0,0,0,.07); transition: transform .2s, background .4s, color .4s; }
-  nav.indice button:hover { transform: translateY(-2px); }
-  nav.indice button.ativo { background: var(--cor); color:#fff; }
+
+  nav.indice { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; padding: 10px 16px 24px; position: sticky; top:0; background: var(--bg); z-index: 10; transition: background .7s ease; }
+  nav.indice button { border:none; border-radius:999px; padding:10px 20px; font: inherit; font-size:.95rem; cursor:pointer; background:var(--card); color:var(--txt); box-shadow:0 2px 10px rgba(0,0,0,.06); transition: transform .25s ease, background .5s ease, color .5s ease, box-shadow .25s ease; }
+  nav.indice button:hover { transform: translateY(-2px); box-shadow:0 6px 14px rgba(0,0,0,.09); }
+  nav.indice button:active { transform: scale(.96); }
+  nav.indice button.ativo { background: var(--cor); color: var(--txt); }
+
   main { max-width: 1100px; margin: 0 auto; padding: 0 16px 60px; }
   .colecao { animation: entra .6s ease both; }
-  .colecao h2 { font-family: Georgia, serif; color: var(--cor); font-size: 1.8rem; margin: 10px 0 4px; transition: color .6s; }
-  .colecao .sub { color: var(--muted); margin-bottom: 22px; }
+  .colecao h2 { font-family: Georgia, serif; font-size: 1.8rem; margin: 10px 0 4px; }
+  .colecao h2::after { content:""; display:block; width:56px; height:6px; border-radius:999px; background: var(--cor); margin-top:8px; transition: background .6s; }
+  .colecao .sub { color: var(--muted); margin: 12px 0 22px; }
   .grade { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:18px; }
-  .card { background: var(--card); border-radius: 22px; overflow:hidden; box-shadow: 0 6px 18px rgba(0,0,0,.07); cursor:pointer; transition: transform .3s, box-shadow .3s; animation: sobe .5s ease both; }
-  .card:hover { transform: translateY(-6px); box-shadow: 0 14px 28px rgba(0,0,0,.12); }
-  .foto { aspect-ratio: 1/1; background: linear-gradient(135deg, var(--cor), #efe3e6); background-size:cover; background-position:center; }
-  .card .info { padding: 14px 16px 16px; }
+
+  .card { background: var(--card); border-radius: 28px; overflow:hidden; box-shadow: 0 6px 18px rgba(0,0,0,.06); cursor:pointer; transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease; animation: sobe .5s ease both; -webkit-tap-highlight-color: transparent; }
+  .card:hover { transform: translateY(-6px); box-shadow: 0 16px 30px rgba(0,0,0,.1); }
+  .card:active { transform: scale(.97); transition-duration: .12s; }
+  .foto { aspect-ratio: 1/1; background: linear-gradient(135deg, var(--cor), #f7eef0); background-size:cover; background-position:center; transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+  .card:hover .foto { transform: scale(1.05); }
+  .card .info { padding: 14px 18px 18px; }
   .card .nome { font-weight:600; }
-  .card .preco { color: var(--cor); font-weight:700; margin-top:4px; }
-  .card .parc { color: var(--muted); font-size:.82rem; margin-top:2px; }
+  .card .parc { color: var(--txt); font-weight:700; font-size:1.05rem; margin-top:4px; }
+  .card .sem-juros { color: var(--muted); font-size:.78rem; margin-top:2px; }
   .vazio { color: var(--muted); padding: 30px 0; text-align:center; }
-  .modal { position: fixed; inset:0; background: rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; z-index:50; }
-  .modal.aberto { display:flex; animation: fade .3s ease both; }
-  .modal .caixa { background:var(--card); color:var(--txt); border-radius:24px; max-width:460px; width:100%; overflow:hidden; animation: sobe .4s ease both; position:relative; }
-  .modal .foto { aspect-ratio: 4/3; }
-  .modal .corpo { padding: 20px 22px 24px; }
-  .modal h3 { font-family: Georgia, serif; font-size:1.4rem; }
-  .modal .preco { color: var(--cor); font-size:1.3rem; font-weight:700; margin: 6px 0; }
-  .modal .parc { color: var(--muted); font-size:.92rem; margin-bottom:6px; }
+
+  /* Janela que se expande a partir da peça tocada */
+  .modal { position: fixed; inset:0; background: rgba(30,20,25,.45); backdrop-filter: blur(3px); display:none; align-items:center; justify-content:center; padding:18px; z-index:50; }
+  .modal.aberto { display:flex; animation: fundo .35s ease both; }
+  .modal.fechando { animation: fundoSai .28s ease both; }
+  .modal .caixa { background:var(--card); color:var(--txt); border-radius:34px; max-width:470px; width:100%; overflow:hidden; position:relative; animation: expandir .55s cubic-bezier(.2,.9,.25,1) both; box-shadow: 0 30px 60px rgba(0,0,0,.25); }
+  .modal.fechando .caixa { animation: encolher .28s ease-in both; }
+  .modal .foto { aspect-ratio: 4/3; border-radius: 0; animation: zoomFoto 1s ease both; }
+  .modal .corpo { padding: 22px 24px 26px; }
+  .modal h3 { font-family: Georgia, serif; font-size:1.45rem; }
+  .modal .parc { font-size:1.5rem; font-weight:700; margin: 8px 0 0; }
+  .modal .sem-juros { color: var(--muted); font-size:.9rem; margin-bottom: 10px; }
   .modal .medidas { color: var(--muted); font-size:.92rem; margin-bottom: 12px; }
-  .modal .desc { line-height:1.5; margin-bottom: 18px; }
-  .modal .fechar { position:absolute; top:12px; right:12px; background:#fff; border:none; border-radius:50%; width:36px; height:36px; font-size:1.2rem; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.15); }
-  .btn-wpp { display:block; text-align:center; background:#25d366; color:#fff; text-decoration:none; padding:14px; border-radius:999px; font-weight:600; transition: transform .2s; }
-  .btn-wpp:hover { transform: scale(1.02); }
+  .modal .desc { line-height:1.55; margin-bottom: 20px; }
+  .modal .fechar { position:absolute; top:14px; right:14px; background:#fff; border:none; border-radius:50%; width:40px; height:40px; font-size:1.3rem; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.15); transition: transform .25s ease; z-index:2; }
+  .modal .fechar:hover { transform: rotate(90deg); }
+  .btn-wpp { display:block; text-align:center; background:#25d366; color:#fff; text-decoration:none; padding:15px; border-radius:999px; font-weight:600; transition: transform .25s ease, box-shadow .25s ease; }
+  .btn-wpp:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(37,211,102,.3); }
+  .btn-wpp:active { transform: scale(.97); }
+
   footer { text-align:center; color: var(--muted); font-size:.85rem; padding: 20px; }
+
   @keyframes sobe { from { opacity:0; transform: translateY(18px); } to { opacity:1; transform:none; } }
   @keyframes entra { from { opacity:0; } to { opacity:1; } }
-  @keyframes fade { from { opacity:0; } to { opacity:1; } }
+  @keyframes fundo { from { opacity:0; } to { opacity:1; } }
+  @keyframes fundoSai { from { opacity:1; } to { opacity:0; } }
+  @keyframes expandir {
+    from { opacity:0; transform: translate(var(--dx,0), var(--dy,0)) scale(.25); border-radius: 90px; }
+    60%  { opacity:1; }
+    to   { opacity:1; transform: none; border-radius: 34px; }
+  }
+  @keyframes encolher { to { opacity:0; transform: translate(var(--dx,0), var(--dy,0)) scale(.25); border-radius: 90px; } }
+  @keyframes zoomFoto { from { transform: scale(1.18); } to { transform: scale(1); } }
   @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
 </style>
 </head>
@@ -59,13 +83,13 @@
 <footer>Toque em uma peça para ver detalhes</footer>
 
 <div class="modal" id="modal">
-  <div class="caixa">
+  <div class="caixa" id="caixa">
     <button class="fechar" id="fechar" aria-label="Fechar">×</button>
     <div class="foto" id="m-foto"></div>
     <div class="corpo">
       <h3 id="m-nome"></h3>
-      <div class="preco" id="m-preco"></div>
       <div class="parc" id="m-parc"></div>
+      <div class="sem-juros" id="m-sem"></div>
       <div class="medidas" id="m-medidas"></div>
       <p class="desc" id="m-desc"></p>
       <a class="btn-wpp" id="m-wpp" target="_blank" rel="noopener">Pedir pelo WhatsApp</a>
@@ -74,6 +98,8 @@
 </div>
 
 <script>
+// Paleta pastel aplicada automaticamente, na ordem das coleções
+const PASTEIS = ["#e9a9b8", "#a5d6d9", "#bcd9a2", "#cdb8e8", "#f5c79a", "#a9c7ea", "#f2b5a7"];
 const TEMAS = {
   rose:    { bg: "#fbf7f4", txt: "#2b2226", muted: "#7a6a70", card: "#ffffff", escuro: false },
   noite:   { bg: "#1d1a1f", txt: "#f5efe6", muted: "#b9aab0", card: "#2a252c", escuro: true },
@@ -84,6 +110,7 @@ const $ = (id) => document.getElementById(id);
 let D = null;
 let colAtiva = 0;
 
+function corDaColecao(i) { return PASTEIS[i % PASTEIS.length]; }
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
@@ -92,22 +119,24 @@ function valorDoPreco(texto) {
   const v = parseFloat(limpo);
   return isNaN(v) ? null : v;
 }
-function textoParcelas(preco) {
+// Mostra só o valor parcelado. Sem parcelamento configurado, mostra o preço normal.
+function precoExibido(preco) {
   const n = parseInt(D.parcelasMax, 10);
   const v = valorDoPreco(preco);
-  if (!n || n < 2 || v === null) return "";
-  return `ou ${n}x de R$ ${(v / n).toFixed(2).replace(".", ",")} sem juros`;
+  if (!n || n < 2 || v === null) return { principal: preco, detalhe: "" };
+  return { principal: `${n}x de R$ ${(v / n).toFixed(2).replace(".", ",")}`, detalhe: "sem juros" };
 }
-function mistura(hex) {
+function mistura(hex, peso = 0.82) {
   const n = parseInt(hex.slice(1), 16);
-  const s = (v) => Math.round(v + (255 - v) * 0.88);
+  const s = (v) => Math.round(v + (255 - v) * peso);
   return `rgb(${s((n >> 16) & 255)}, ${s((n >> 8) & 255)}, ${s(n & 255)})`;
 }
-function aplicarTema() {
+function aplicarTema(cor) {
   const t = TEMAS[D.tema] || TEMAS.rose;
   const r = document.documentElement.style;
   r.setProperty("--bg", t.bg); r.setProperty("--txt", t.txt);
   r.setProperty("--muted", t.muted); r.setProperty("--card", t.card);
+  r.setProperty("--cor", cor);
   return t;
 }
 
@@ -115,28 +144,31 @@ function renderCatalogo() {
   if (colAtiva >= D.colecoes.length) colAtiva = 0;
   $("titulo-loja").textContent = D.loja;
   document.title = D.loja;
-  const tema = aplicarTema();
 
   $("indice").innerHTML = D.colecoes.map((c, i) =>
-    `<button data-i="${i}" class="${i === colAtiva ? "ativo" : ""}">${esc(c.nome)}</button>`).join("");
+    `<button data-i="${i}" class="${i === colAtiva ? "ativo" : ""}" style="${i === colAtiva ? `background:${corDaColecao(i)}` : ""}">${esc(c.nome)}</button>`).join("");
   $("indice").querySelectorAll("button").forEach(b =>
     b.onclick = () => { colAtiva = +b.dataset.i; renderCatalogo(); });
 
   const c = D.colecoes[colAtiva];
   if (!c) { $("conteudo").innerHTML = `<p class="vazio">Catálogo em breve.</p>`; return; }
-  document.body.style.background = tema.escuro ? tema.bg : mistura(c.cor);
-  document.documentElement.style.setProperty("--cor", c.cor);
+  const cor = corDaColecao(colAtiva);
+  const tema = aplicarTema(cor);
+  document.body.style.background = tema.escuro ? tema.bg : mistura(cor);
 
   const pecas = c.pecas.length
-    ? c.pecas.map((p, i) => `
+    ? c.pecas.map((p, i) => {
+        const pr = precoExibido(p.preco);
+        return `
         <div class="card" data-p="${i}" style="animation-delay:${i * 0.08}s">
           <div class="foto" style="${p.foto ? `background-image:url('${esc(p.foto)}')` : ""}"></div>
           <div class="info">
             <div class="nome">${esc(p.nome)}</div>
-            <div class="preco">${esc(p.preco)}</div>
-            <div class="parc">${esc(textoParcelas(p.preco))}</div>
+            <div class="parc">${esc(pr.principal)}</div>
+            ${pr.detalhe ? `<div class="sem-juros">${esc(pr.detalhe)}</div>` : ""}
           </div>
-        </div>`).join("")
+        </div>`;
+      }).join("")
     : `<p class="vazio">Nenhuma peça nesta coleção ainda.</p>`;
 
   $("conteudo").innerHTML = `
@@ -146,23 +178,37 @@ function renderCatalogo() {
       <div class="grade">${pecas}</div>
     </section>`;
   $("conteudo").querySelectorAll(".card").forEach(card =>
-    card.onclick = () => abrirModal(c.pecas[+card.dataset.p], c.nome));
+    card.onclick = () => abrirModal(c.pecas[+card.dataset.p], c.nome, card));
 }
 
-function abrirModal(p, colNome) {
+// Anima a janela a partir do ponto exato em que a peça foi tocada
+function abrirModal(p, colNome, cardOrigem) {
+  const pr = precoExibido(p.preco);
   $("m-foto").style.backgroundImage = p.foto ? `url('${p.foto}')` : "";
   $("m-nome").textContent = p.nome;
-  $("m-preco").textContent = p.preco;
-  $("m-parc").textContent = textoParcelas(p.preco);
+  $("m-parc").textContent = pr.principal;
+  $("m-sem").textContent = pr.detalhe;
   $("m-medidas").textContent = p.medidas ? "Medidas: " + p.medidas : "";
   $("m-desc").textContent = p.descricao;
   const numero = (D.whatsapp || "").replace(/\D/g, "");
-  const parc = textoParcelas(p.preco);
-  const msg = encodeURIComponent(`Olá! Tenho interesse na peça "${p.nome}" (${colNome}) - ${p.preco}${parc ? " " + parc : ""}`);
+  const msg = encodeURIComponent(`Olá! Tenho interesse na peça "${p.nome}" (${colNome}): ${pr.principal} ${pr.detalhe}`.trim());
   $("m-wpp").href = `https://wa.me/${numero}?text=${msg}`;
+
+  const r = cardOrigem.getBoundingClientRect();
+  const dx = (r.left + r.width / 2) - window.innerWidth / 2;
+  const dy = (r.top + r.height / 2) - window.innerHeight / 2;
+  $("caixa").style.setProperty("--dx", dx + "px");
+  $("caixa").style.setProperty("--dy", dy + "px");
+
+  $("modal").classList.remove("fechando");
   $("modal").classList.add("aberto");
 }
-function fecharModal() { $("modal").classList.remove("aberto"); }
+function fecharModal() {
+  const m = $("modal");
+  if (!m.classList.contains("aberto") || m.classList.contains("fechando")) return;
+  m.classList.add("fechando");
+  setTimeout(() => m.classList.remove("aberto", "fechando"), 280);
+}
 $("fechar").onclick = fecharModal;
 $("modal").onclick = (e) => { if (e.target.id === "modal") fecharModal(); };
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") fecharModal(); });

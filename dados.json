@@ -1,7 +1,32 @@
 {
   "loja": "Minha Coleção",
-  "whatsapp": "",
+  "whatsapp": "5577999999999",
   "tema": "rose",
   "parcelasMax": 3,
-  "colecoes": []
+  "colecoes": [
+    {
+      "id": "correntes", "nome": "Correntes e Pulseiras", "cor": "#c9868f",
+      "descricao": "Peças para o dia a dia e para combinar em camadas.",
+      "pecas": [
+        { "id": "corrente-veneziana", "nome": "Corrente Veneziana", "preco": "R$ 89,90", "foto": "", "medidas": "45 cm", "descricao": "Elo veneziano com acabamento brilhante." },
+        { "id": "pulseira-lua", "nome": "Pulseira Lua", "preco": "R$ 69,90", "foto": "", "medidas": "17 cm + extensor", "descricao": "Pingente de lua delicado." }
+      ]
+    },
+    {
+      "id": "aneis", "nome": "Anéis", "cor": "#3f7c85",
+      "descricao": "Do minimalista ao statement.",
+      "pecas": [
+        { "id": "anel-solitario", "nome": "Anel Solitário", "preco": "R$ 49,90", "foto": "", "medidas": "Aro 14 ao 22", "descricao": "Pedra central com garras finas." },
+        { "id": "anel-trancado", "nome": "Anel Trançado", "preco": "R$ 59,90", "foto": "", "medidas": "Aro 14 ao 22", "descricao": "Textura trançada em tom dourado." }
+      ]
+    },
+    {
+      "id": "brincos", "nome": "Brincos", "cor": "#6b7f4e",
+      "descricao": "Para cada ocasião, da argola ao pendente.",
+      "pecas": [
+        { "id": "argola-classica", "nome": "Argola Clássica", "preco": "R$ 39,90", "foto": "", "medidas": "3 cm", "descricao": "Argola leve com fecho de segurança." },
+        { "id": "brinco-gota", "nome": "Brinco Gota", "preco": "R$ 54,90", "foto": "", "medidas": "4 cm", "descricao": "Gota com movimento suave." }
+      ]
+    }
+  ]
 }
