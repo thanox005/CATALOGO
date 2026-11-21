@@ -21,8 +21,7 @@
 
   main { max-width: 1100px; margin: 0 auto; padding: 0 16px 60px; }
   .colecao { animation: entra .6s ease both; }
-  .colecao h2 { font-family: Georgia, serif; font-size: 1.8rem; margin: 10px 0 4px; text-align: center; }
-  .colecao .sub { color: var(--muted); margin: 8px 0 26px; text-align: center; }
+  .colecao .sub { color: var(--muted); margin: 0 0 26px; text-align: center; }
   .grade { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:18px; }
 
   .card { background: var(--card); border-radius: 28px; overflow:hidden; box-shadow: 0 6px 18px rgba(0,0,0,.06); cursor:pointer; transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease; animation: sobe .5s ease both; -webkit-tap-highlight-color: transparent; }
@@ -172,7 +171,6 @@ function renderCatalogo() {
 
   $("conteudo").innerHTML = `
     <section class="colecao">
-      <h2>${esc(c.nome)}</h2>
       <p class="sub">${esc(c.descricao)}</p>
       <div class="grade">${pecas}</div>
     </section>`;
