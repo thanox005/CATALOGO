@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADM - Catálogo</title>
+<style>
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background:#f3f1f2; color:#2b2226; padding: 14px; min-height:100vh; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  h1 { font-family: Georgia, serif; font-size: 1.5rem; margin-bottom: 2px; }
+  .dica { color:#7a6a70; font-size:.88rem; margin-bottom:14px; line-height:1.4; }
+  .topo { background:#fff; border-radius:16px; padding:12px 14px; margin-bottom:14px; box-shadow:0 4px 14px rgba(0,0,0,.06); display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+  .grupo { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .status { font-size:.88rem; color:#7a6a70; }
+  .status.ok { color:#1b5e20; }
+  .status.erro { color:#8a1f1f; }
+
+  .layout { display:grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 440px); gap:16px; align-items:start; }
+  .previa { position: sticky; top: 10px; }
+  .previa .titulo { font-weight:600; font-size:.9rem; color:#7a6a70; margin-bottom:6px; }
+
+  .bloco { background:#fff; border-radius:18px; padding:14px; margin-bottom:14px; box-shadow:0 4px 14px rgba(0,0,0,.06); }
+  .bloco h2 { font-family: Georgia, serif; font-size:1.1rem; margin-bottom:10px; }
+  .linha { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px; }
+  .linha.tres { grid-template-columns: 1fr 1fr 1fr; }
+  .linha.um { grid-template-columns: 1fr; }
+  label { display:block; font-size:.78rem; color:#7a6a70; margin-bottom:3px; }
+  input, textarea, select { width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:12px; font: inherit; background:#fff; color:#2b2226; }
+  textarea { min-height:56px; resize:vertical; }
+  .peca { border-top:1px dashed #ddd; padding-top:12px; margin-top:12px; }
+  .acoes { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; align-items:center; }
+  button { border:none; border-radius:12px; padding:10px 14px; cursor:pointer; background:#f1ecee; color:#2b2226; font: inherit; font-size:.9rem; }
+  button:disabled { opacity:.35; cursor:default; }
+  button.primario { background:#2b2226; color:#fff; }
+  button.perigo { background:#f7dede; color:#8a1f1f; }
+  .miniatura { width:56px; height:56px; border-radius:14px; background:#eee center/cover no-repeat; display:inline-block; flex-shrink:0; }
+  .arquivo-btn { display:inline-block; background:#f1ecee; border-radius:12px; padding:10px 14px; cursor:pointer; font-size:.9rem; }
+  .arquivo-btn input { display:none; }
+  .status-foto { font-size:.82rem; color:#7a6a70; }
+
+  /* login */
+  #tela-login { max-width: 380px; margin: 60px auto; background:#fff; border-radius:24px; padding:28px; box-shadow:0 10px 30px rgba(0,0,0,.08); }
+  #tela-login h1 { text-align:center; margin-bottom:6px; }
+  #tela-login .dica { text-align:center; }
+  #tela-login .linha.um { margin-bottom:14px; }
+  #tela-login button { width:100%; padding:13px; }
+  #erro-login { color:#8a1f1f; font-size:.9rem; min-height:20px; margin-top:10px; text-align:center; }
+
+  /* prévia (mesmo visual do catálogo) */
+  .pv { border-radius:28px; overflow:hidden; background: var(--pv-bg); color: var(--pv-txt); font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; box-shadow:0 6px 18px rgba(0,0,0,.1); transition: background .5s; }
+  .pv-scroll { max-height: 72vh; overflow-y: auto; }
+  .pv-capa { text-align:center; padding: 30px 14px 16px; }
+  .pv-capa h1 { font-family: Georgia, serif; font-size: 1.5rem; letter-spacing: 1.5px; }
+  .pv-capa p { color: var(--pv-muted); margin-top: 4px; font-size:.85rem; }
+  .pv-nav { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; padding: 6px 10px 14px; position: sticky; top:0; background: var(--pv-bg); z-index:2; }
+  .pv-nav button { border-radius:999px; padding:6px 12px; font-size:.8rem; background: var(--pv-card); color: var(--pv-txt); box-shadow:0 1px 5px rgba(0,0,0,.08); }
+  .pv-nav button.ativo { background: var(--pv-cor); color:#2b2226; }
+  .pv-main { padding: 0 12px 20px; }
+  .pv-main .sub { color: var(--pv-muted); font-size:.85rem; margin-bottom: 14px; text-align: center; }
+  .pv-grade { display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:10px; }
+  .pv-card { background: var(--pv-card); border-radius: 26px; overflow:hidden; box-shadow: 0 3px 10px rgba(0,0,0,.07); }
+  .pv-foto { aspect-ratio: 1/1; border-radius: 0; background: linear-gradient(135deg, var(--pv-cor), #efe3e6); background-size: cover; background-position: center; display:flex; align-items:center; justify-content:center; color:#fff; font-size:.7rem; text-align:center; padding:6px; }
+  .pv-info { padding: 9px 10px 11px; }
+  .pv-nome { font-weight:600; font-size:.85rem; }
+  .pv-preco { color: var(--pv-txt); font-weight:700; font-size:.9rem; margin-top:2px; }
+  .pv-parc { color: var(--pv-muted); font-size:.72rem; margin-top:1px; }
+  .pv-vazio { color: var(--pv-muted); text-align:center; padding: 20px 0; font-size:.85rem; }
+  .pv-rodape { text-align:center; color: var(--pv-muted); font-size:.75rem; padding: 8px; }
+
+  @media (max-width: 960px) {
+    .layout { grid-template-columns: 1fr; }
+    .previa { position: static; }
+    .pv-scroll { max-height: none; }
+  }
+  @media (max-width: 600px) { .linha, .linha.tres { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- >>> CONFERIR: mesma URL do Apps Script usada na vitrine (termina em /exec) -->
+<script>const API_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";</script>
+
+<!-- TELA DE LOGIN -->
+<div id="tela-login" style="display:none">
+  <h1>Acesso do administrador</h1>
+  <div class="dica">Entre para editar o catálogo.</div>
+  <div class="linha um"><div><label>Usuário</label><input id="login-usuario" autocomplete="username" value="adm"></div></div>
+  <div class="linha um"><div><label>Senha</label><input id="login-senha" type="password" autocomplete="current-password"></div></div>
+  <button type="button" class="primario" id="btn-login">Entrar</button>
+  <div id="erro-login"></div>
+  <p style="text-align:center; margin-top:14px"><a href="index.html" style="color:#7a6a70; font-size:.85rem">← Voltar ao catálogo</a></p>
+</div>
+
+<!-- PAINEL DE EDIÇÃO -->
+<div class="wrap" id="tela-adm" style="display:none">
+  <h1>Painel do catálogo</h1>
+  <div class="dica">Tudo que você muda aqui é salvo automaticamente e aparece no catálogo. Fotos são enviadas uma por vez.</div>
+
+  <div class="topo">
+    <div class="status" id="status-geral">Carregando...</div>
+    <div class="grupo">
+      <a href="index.html" target="_blank" style="text-decoration:none"><button type="button">Ver catálogo</button></a>
+      <button type="button" id="btn-sair">Sair</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div id="painel"></div>
+    <div class="previa">
+      <div class="titulo">Como o cliente vai ver</div>
+      <div class="pv-scroll" id="previa"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TEMAS = {
+  rose:    { nome: "Rosé clássico",  bg: "#fbf7f4", txt: "#2b2226", muted: "#7a6a70", card: "#ffffff", escuro: false },
+  noite:   { nome: "Noite dourada",  bg: "#1d1a1f", txt: "#f5efe6", muted: "#b9aab0", card: "#2a252c", escuro: true },
+  linho:   { nome: "Linho natural",  bg: "#f4efe6", txt: "#3b3429", muted: "#8a7f6e", card: "#fffdf8", escuro: false },
+  minimal: { nome: "Minimal branco", bg: "#ffffff", txt: "#111111", muted: "#777777", card: "#f5f5f5", escuro: false }
+};
+const PASTEIS = ["#e9a9b8", "#a5d6d9", "#bcd9a2", "#cdb8e8", "#f5c79a", "#a9c7ea", "#f2b5a7"];
+
+let D = { loja: "Minha Coleção", whatsapp: "", tema: "rose", parcelasMax: 3, colecoes: [] };
+let previaCol = 0;
+let timerSalvar = null;
+
+const $ = (id) => document.getElementById(id);
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function uid() { return Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4); }
+function slug(s) {
+  return String(s || "item").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "item";
+}
+function normalizarDados(d) {
+  d.tema = TEMAS[d.tema] ? d.tema : "rose";
+  d.parcelasMax = parseInt(d.parcelasMax, 10) || 1;
+  d.colecoes = (d.colecoes || []).map(c => ({
+    id: c.id || slug(c.nome) + "-" + uid(),
+    nome: c.nome || "Coleção", cor: c.cor || "", descricao: c.descricao || "",
+    pecas: (c.pecas || []).map(p => ({
+      id: p.id || uid(), nome: p.nome || "", preco: p.preco || "", foto: p.foto || "",
+      medidas: p.medidas || "", descricao: p.descricao || ""
+    }))
+  }));
+  return d;
+}
+
+// ---------- COMUNICAÇÃO COM O SERVIDOR ----------
+async function enviar(obj) {
+  const r = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(obj)
+  });
+  const res = await r.json();
+  if (res.sessao === false) sair(true);
+  return res;
+}
+function token() { return localStorage.getItem("catalogo_token") || ""; }
+
+// ---------- LOGIN ----------
+async function fazerLogin() {
+  $("erro-login").textContent = "Entrando...";
+  try {
+    const res = await enviar({ acao: "login", usuario: $("login-usuario").value, senha: $("login-senha").value });
+    if (!res.ok) throw new Error(res.erro);
+    localStorage.setItem("catalogo_token", res.token);
+    $("login-senha").value = "";
+    iniciarPainel();
+  } catch (err) {
+    $("erro-login").textContent = err.message || "Não foi possível entrar";
+  }
+}
+$("btn-login").onclick = fazerLogin;
+$("login-senha").addEventListener("keydown", (e) => { if (e.key === "Enter") fazerLogin(); });
+
+function sair(porSessaoExpirada) {
+  localStorage.removeItem("catalogo_token");
+  $("tela-adm").style.display = "none";
+  $("tela-login").style.display = "block";
+  if (porSessaoExpirada) $("erro-login").textContent = "Sessão expirada. Entre de novo.";
+}
+$("btn-sair").onclick = () => sair(false);
+
+async function iniciarPainel() {
+  $("tela-login").style.display = "none";
+  $("tela-adm").style.display = "block";
+  setStatus("Carregando...", "");
+  try {
+    const r = await fetch(API_URL + "?acao=dados", { cache: "no-store" });
+    const res = await r.json();
+    if (!res.ok) throw new Error(res.erro);
+    D = normalizarDados(res.dados);
+    previaCol = 0;
+    renderPainel();
+    setStatus("Tudo salvo", "ok");
+  } catch (err) {
+    setStatus("Erro ao carregar: " + err.message, "erro");
+  }
+}
+
+// ---------- STATUS / SALVAR ----------
+function setStatus(texto, classe) {
+  const el = $("status-geral");
+  el.textContent = texto;
+  el.className = "status " + (classe || "");
+}
+function agendarSalvar() {
+  setStatus("Salvando...", "");
+  clearTimeout(timerSalvar);
+  timerSalvar = setTimeout(salvarAgora, 900);
+}
+async function salvarAgora() {
+  try {
+    const res = await enviar({ acao: "salvar", token: token(), dados: D });
+    if (!res.ok) throw new Error(res.erro);
+    const hora = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    setStatus("Salvo às " + hora, "ok");
+  } catch (err) {
+    setStatus("Erro ao salvar: " + err.message, "erro");
+  }
+}
+
+// ---------- PREÇO (igual ao catálogo) ----------
+function valorDoPreco(texto) {
+  const limpo = String(texto || "").replace(/[^\d,.]/g, "").replace(/\./g, "").replace(",", ".");
+  const v = parseFloat(limpo);
+  return isNaN(v) ? null : v;
+}
+function precoPrazo(preco) {
+  const n = parseInt(D.parcelasMax, 10);
+  const v = valorDoPreco(preco);
+  if (!n || n < 2 || v === null) return preco || "R$ 0,00";
+  return `${n}x de R$ ${(v / n).toFixed(2).replace(".", ",")}`;
+}
+function mistura(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const s = (v) => Math.round(v + (255 - v) * 0.82);
+  return `rgb(${s((n >> 16) & 255)}, ${s((n >> 8) & 255)}, ${s(n & 255)})`;
+}
+
+// ---------- FOTOS ----------
+function lerImagem(blob) {
+  return new Promise((resolve, reject) => {
+    const leitor = new FileReader();
+    leitor.onerror = () => reject(new Error("não consegui ler o arquivo"));
+    leitor.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("formato não lido pelo navegador"));
+      img.onload = () => resolve(img);
+      img.src = leitor.result;
+    };
+    leitor.readAsDataURL(blob);
+  });
+}
+function carregarScript(url) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = url; s.onload = resolve;
+    s.onerror = () => reject(new Error("falha ao carregar " + url));
+    document.head.appendChild(s);
+  });
+}
+async function ehHeicPelaAssinatura(arquivo) {
+  const bytes = new Uint8Array(await arquivo.slice(0, 12).arrayBuffer());
+  const tipo = String.fromCharCode(...bytes.slice(4, 8));
+  const marca = String.fromCharCode(...bytes.slice(8, 12));
+  return tipo === "ftyp" && /heic|heix|hevc|heim|heis|mif1|msf1/.test(marca);
+}
+async function converterHeic(arquivo) {
+  const urls = [
+    "https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js",
+    "https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js"
+  ];
+  let erro = null;
+  for (const url of urls) {
+    try {
+      if (!window.heic2any) await carregarScript(url);
+      const saida = await window.heic2any({ blob: arquivo, toType: "image/jpeg", quality: 0.9 });
+      return Array.isArray(saida) ? saida[0] : saida;
+    } catch (e) { erro = e; }
+  }
+  throw new Error("não consegui converter o HEIC (" + (erro && erro.message ? erro.message : "sem internet?") + "). Tente enviar em JPG.");
+}
+function desenharFoto(img, maxLado = 900, qualidade = 0.82) {
+  const escala = Math.min(1, maxLado / Math.max(img.width, img.height));
+  const cv = document.createElement("canvas");
+  cv.width = Math.round(img.width * escala);
+  cv.height = Math.round(img.height * escala);
+  cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+  return cv.toDataURL("image/jpeg", qualidade);
+}
+async function prepararFoto(arquivo) {
+  let img = await lerImagem(arquivo).catch(() => null);
+  if (!img) {
+    const heic = /heic|heif/i.test(arquivo.type || "") || /\.(heic|heif)$/i.test(arquivo.name || "") || await ehHeicPelaAssinatura(arquivo);
+    if (!heic) throw new Error("este arquivo não é uma imagem suportada; tente JPG ou PNG");
+    img = await lerImagem(await converterHeic(arquivo));
+  }
+  return desenharFoto(img);
+}
+
+// ---------- PAINEL ----------
+function renderPainel() {
+  const opcoesTema = Object.entries(TEMAS).map(([k, t]) =>
+    `<option value="${k}" ${D.tema === k ? "selected" : ""}>${t.nome}</option>`).join("");
+
+  $("painel").innerHTML = `
+    <div class="bloco">
+      <h2>Dados gerais</h2>
+      <div class="linha tres">
+        <div><label>Nome da loja</label><input data-campo="loja" value="${esc(D.loja)}"></div>
+        <div><label>WhatsApp (DDI+DDD+número)</label><input data-campo="whatsapp" value="${esc(D.whatsapp)}" placeholder="5577999999999"></div>
+        <div><label>Tema visual</label><select data-campo="tema">${opcoesTema}</select></div>
+      </div>
+      <div class="linha">
+        <div><label>Parcelas sem juros (máximo; 1 mostra o preço normal)</label><input type="number" min="1" max="12" data-campo="parcelasMax" value="${esc(D.parcelasMax)}"></div>
+        <div></div>
+      </div>
+    </div>
+
+    ${D.colecoes.map((c, ci) => `
+      <div class="bloco">
+        <h2>Coleção ${ci + 1}: ${esc(c.nome)}</h2>
+        <div class="linha">
+          <div><label>Nome da coleção</label><input data-c="${ci}" data-campo="nome" value="${esc(c.nome)}"></div>
+          <div></div>
+        </div>
+        <div class="linha um"><div><label>Descrição da coleção</label><input data-c="${ci}" data-campo="descricao" value="${esc(c.descricao)}"></div></div>
+
+        ${c.pecas.map((p, pi) => `
+          <div class="peca">
+            <div class="linha">
+              <div><label>Nome da peça</label><input data-c="${ci}" data-p="${pi}" data-campo="nome" value="${esc(p.nome)}"></div>
+              <div><label>Preço (à vista)</label><input data-c="${ci}" data-p="${pi}" data-campo="preco" value="${esc(p.preco)}" placeholder="R$ 89,90"></div>
+            </div>
+            <div class="linha">
+              <div><label>Medidas</label><input data-c="${ci}" data-p="${pi}" data-campo="medidas" value="${esc(p.medidas)}"></div>
+              <div><label>Descrição</label><input data-c="${ci}" data-p="${pi}" data-campo="descricao" value="${esc(p.descricao)}"></div>
+            </div>
+            <div class="acoes">
+              <span class="miniatura" style="${p.foto ? `background-image:url('${esc(p.foto)}')` : ""}"></span>
+              <label class="arquivo-btn">${p.foto ? "Trocar foto" : "Escolher foto"}<input type="file" accept="image/*,.heic,.heif" data-arquivo="1" data-c="${ci}" data-p="${pi}"></label>
+              ${p.foto ? `<button type="button" data-acao="tirarfoto" data-c="${ci}" data-p="${pi}">Remover foto</button>` : ""}
+              <span class="status-foto" data-status="${ci}-${pi}"></span>
+            </div>
+            <div class="acoes">
+              <button type="button" data-acao="subir" data-c="${ci}" data-p="${pi}" ${pi === 0 ? "disabled" : ""}>↑ Subir</button>
+              <button type="button" data-acao="descer" data-c="${ci}" data-p="${pi}" ${pi === c.pecas.length - 1 ? "disabled" : ""}>↓ Descer</button>
+              <button type="button" data-acao="duplicar" data-c="${ci}" data-p="${pi}">Duplicar</button>
+              <button type="button" class="perigo" data-acao="rmp" data-c="${ci}" data-p="${pi}">Remover peça</button>
+            </div>
+          </div>`).join("")}
+
+        <div class="acoes">
+          <button type="button" data-acao="addp" data-c="${ci}">+ Nova peça</button>
+          <button type="button" data-acao="subc" data-c="${ci}" ${ci === 0 ? "disabled" : ""}>↑ Coleção</button>
+          <button type="button" data-acao="descc" data-c="${ci}" ${ci === D.colecoes.length - 1 ? "disabled" : ""}>↓ Coleção</button>
+          <button type="button" class="perigo" data-acao="rmc" data-c="${ci}">Remover coleção</button>
+        </div>
+      </div>`).join("")}
+
+    <div class="acoes"><button type="button" class="primario" data-acao="addc">+ Nova coleção</button></div>
+  `;
+  renderPrevia();
+}
+
+// ---------- PRÉVIA ----------
+function renderPrevia() {
+  const t = TEMAS[D.tema] || TEMAS.rose;
+  if (previaCol >= D.colecoes.length) previaCol = 0;
+  const c = D.colecoes[previaCol];
+  const corCol = PASTEIS[previaCol % PASTEIS.length];
+  const fundo = t.escuro ? t.bg : mistura(corCol);
+
+  const pills = D.colecoes.map((col, i) =>
+    `<button type="button" data-prev="${i}" class="${i === previaCol ? "ativo" : ""}" style="${i === previaCol ? `background:${PASTEIS[i % PASTEIS.length]}` : ""}">${esc(col.nome)}</button>`).join("");
+
+  let pecas;
+  if (!c) pecas = `<div class="pv-vazio">Adicione uma coleção para ver a prévia.</div>`;
+  else if (!c.pecas.length) pecas = `<div class="pv-vazio">Nenhuma peça nesta coleção ainda.</div>`;
+  else pecas = `<div class="pv-grade">${c.pecas.map(p => `
+        <div class="pv-card">
+          <div class="pv-foto" style="${p.foto ? `background-image:url('${esc(p.foto)}')` : ""}">${p.foto ? "" : "sem foto"}</div>
+          <div class="pv-info">
+            <div class="pv-nome">${esc(p.nome) || "(sem nome)"}</div>
+            <div class="pv-preco">${esc(precoPrazo(p.preco))}</div>
+            ${D.parcelasMax >= 2 ? `<div class="pv-parc">sem juros</div>` : ""}
+          </div>
+        </div>`).join("")}</div>`;
+
+  $("previa").innerHTML = `
+    <div class="pv" style="--pv-bg:${fundo}; --pv-txt:${t.txt}; --pv-muted:${t.muted}; --pv-card:${t.card}; --pv-cor:${corCol};">
+      <div class="pv-capa">
+        <h1>${esc(D.loja) || "Minha Coleção"}</h1>
+        <p>Semijoias com brilho do seu jeito</p>
+      </div>
+      <div class="pv-nav">${pills}</div>
+      <div class="pv-main">
+        ${c && c.descricao ? `<p class="sub">${esc(c.descricao)}</p>` : ""}
+        ${pecas}
+      </div>
+      <div class="pv-rodape">Toque em uma peça para ver detalhes</div>
+    </div>`;
+  $("previa").querySelectorAll("[data-prev]").forEach(b =>
+    b.onclick = () => { previaCol = +b.dataset.prev; renderPrevia(); });
+}
+
+// ---------- EDIÇÃO DE CAMPOS ----------
+function aoEditarCampo(e) {
+  const t = e.target;
+  if (!t.dataset || !t.dataset.campo) return;
+  const campo = t.dataset.campo;
+  let valor = t.value;
+  if (campo === "parcelasMax") valor = parseInt(valor, 10) || 1;
+  if (t.dataset.c === undefined) D[campo] = valor;
+  else if (t.dataset.p === undefined) D.colecoes[+t.dataset.c][campo] = valor;
+  else D.colecoes[+t.dataset.c].pecas[+t.dataset.p][campo] = valor;
+  renderPrevia();
+  agendarSalvar();
+}
+document.addEventListener("input", aoEditarCampo);
+document.addEventListener("change", aoEditarCampo);
+
+// ---------- ENVIO DE FOTO ----------
+document.addEventListener("change", async (e) => {
+  const t = e.target;
+  if (!t.dataset || !t.dataset.arquivo || !t.files || !t.files[0]) return;
+  const ci = +t.dataset.c, pi = +t.dataset.p;
+  const colecao = D.colecoes[ci], peca = colecao.pecas[pi];
+  const status = document.querySelector(`[data-status="${ci}-${pi}"]`);
+  try {
+    if (status) status.textContent = "Preparando foto...";
+    const dataUrl = await prepararFoto(t.files[0]);
+    if (status) status.textContent = "Enviando...";
+    const nome = `${slug(colecao.nome)}-${slug(peca.nome)}-${peca.id}-${Date.now()}.jpg`;
+    const res = await enviar({
+      acao: "foto",
+      token: token(),
+      nome: nome,
+      base64: dataUrl.split(",")[1]
+    });
+    if (!res.ok) throw new Error(res.erro);
+    peca.foto = res.url;
+    if (status) status.textContent = "Foto enviada ✓";
+    renderPainel();
+    agendarSalvar();
+  } catch (err) {
+    if (status) status.textContent = "Erro: " + err.message;
+  }
+});
+
+// ---------- BOTÕES ----------
+$("painel").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-acao]");
+  if (!b || b.disabled) return;
+  const ci = +b.dataset.c, pi = +b.dataset.p;
+  const colecao = D.colecoes[ci];
+  const pecas = colecao ? colecao.pecas : null;
+  switch (b.dataset.acao) {
+    case "addp": pecas.push({ id: uid(), nome: "Nova peça", preco: "R$ 0,00", foto: "", medidas: "", descricao: "" }); break;
+    case "duplicar": pecas.splice(pi + 1, 0, { ...JSON.parse(JSON.stringify(pecas[pi])), id: uid() }); break;
+    case "subir": [pecas[pi - 1], pecas[pi]] = [pecas[pi], pecas[pi - 1]]; break;
+    case "descer": [pecas[pi + 1], pecas[pi]] = [pecas[pi], pecas[pi + 1]]; break;
+    case "tirarfoto": pecas[pi].foto = ""; break;
+    case "rmp": if (!confirm("Remover esta peça?")) return; pecas.splice(pi, 1); break;
+    case "addc": D.colecoes.push({ id: slug("nova") + "-" + uid(), nome: "Nova coleção", cor: "", descricao: "", pecas: [] }); previaCol = D.colecoes.length - 1; break;
+    case "rmc": if (!confirm("Remover esta coleção e todas as suas peças?")) return; D.colecoes.splice(ci, 1); break;
+    case "subc": [D.colecoes[ci - 1], D.colecoes[ci]] = [D.colecoes[ci], D.colecoes[ci - 1]]; break;
+    case "descc": [D.colecoes[ci + 1], D.colecoes[ci]] = [D.colecoes[ci], D.colecoes[ci + 1]]; break;
+  }
+  renderPainel();
+  agendarSalvar();
+});
+
+$("previa").addEventListener("click", () => {});
+
+// ---------- INÍCIO ----------
+if (token()) iniciarPainel();
+else $("tela-login").style.display = "block";
+</script>
+</body>
+</html>

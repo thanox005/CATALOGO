@@ -7,8 +7,7 @@
 <style>
   :root { --bg:#fbf7f4; --txt:#2b2226; --muted:#7a6a70; --cor:#e9a9b8; --card:#ffffff; }
   * { box-sizing: border-box; margin:0; padding:0; }
-  body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--txt); transition: background .7s ease, color .6s ease; min-height:100vh; }
-
+  body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--txt); transition: background .7s ease, color .6s ease; min-height:100vh; display:flex; flex-direction:column; }
   header.capa { text-align:center; padding: 56px 20px 26px; }
   header.capa h1 { font-family: Georgia, serif; font-size: clamp(2rem, 6vw, 3.4rem); letter-spacing: 2px; animation: sobe 1s ease both; }
   header.capa p { color: var(--muted); margin-top: 8px; animation: sobe 1.3s ease both; }
@@ -19,7 +18,7 @@
   nav.indice button:active { transform: scale(.96); }
   nav.indice button.ativo { background: var(--cor); color: var(--txt); }
 
-  main { max-width: 1100px; margin: 0 auto; padding: 0 16px 60px; }
+  main { flex:1; width:100%; max-width: 1100px; margin: 0 auto; padding: 0 16px 40px; }
   .colecao { animation: entra .6s ease both; }
   .colecao .sub { color: var(--muted); margin: 0 0 26px; text-align: center; }
   .grade { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:18px; }
@@ -35,7 +34,6 @@
   .card .sem-juros { color: var(--muted); font-size:.78rem; margin-top:2px; }
   .vazio { color: var(--muted); padding: 30px 0; text-align:center; }
 
-  /* Janela que se expande a partir da peça tocada */
   .modal { position: fixed; inset:0; background: rgba(30,20,25,.45); backdrop-filter: blur(3px); display:none; align-items:center; justify-content:center; padding:18px; z-index:50; }
   .modal.aberto { display:flex; animation: fundo .35s ease both; }
   .modal.fechando { animation: fundoSai .28s ease both; }
@@ -54,7 +52,9 @@
   .btn-wpp:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(37,211,102,.3); }
   .btn-wpp:active { transform: scale(.97); }
 
-  footer { text-align:center; color: var(--muted); font-size:.85rem; padding: 20px; }
+  footer { text-align:center; color: var(--muted); font-size:.85rem; padding: 22px 20px 26px; }
+  footer .acesso { color: var(--muted); text-decoration: none; font-size:.78rem; opacity:.7; }
+  footer .acesso:hover { text-decoration: underline; opacity:1; }
 
   @keyframes sobe { from { opacity:0; transform: translateY(18px); } to { opacity:1; transform:none; } }
   @keyframes entra { from { opacity:0; } to { opacity:1; } }
@@ -77,8 +77,11 @@
   <p>Semijoias com brilho do seu jeito</p>
 </header>
 <nav class="indice" id="indice"></nav>
-<main id="conteudo"></main>
-<footer>Toque em uma peça para ver detalhes</footer>
+<main id="conteudo"><p class="vazio">Carregando catálogo...</p></main>
+<footer>
+  Toque em uma peça para ver detalhes<br>
+  <a class="acesso" href="adm.html">Acesso</a>
+</footer>
 
 <div class="modal" id="modal">
   <div class="caixa" id="caixa">
@@ -96,7 +99,9 @@
 </div>
 
 <script>
-// Paleta pastel aplicada automaticamente, na ordem das coleções
+// >>> CONFERIR: cole aqui a URL do Apps Script (termina em /exec)
+const API_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
+
 const PASTEIS = ["#e9a9b8", "#a5d6d9", "#bcd9a2", "#cdb8e8", "#f5c79a", "#a9c7ea", "#f2b5a7"];
 const TEMAS = {
   rose:    { bg: "#fbf7f4", txt: "#2b2226", muted: "#7a6a70", card: "#ffffff", escuro: false },
@@ -117,7 +122,6 @@ function valorDoPreco(texto) {
   const v = parseFloat(limpo);
   return isNaN(v) ? null : v;
 }
-// Mostra só o valor parcelado. Sem parcelamento configurado, mostra o preço normal.
 function precoExibido(preco) {
   const n = parseInt(D.parcelasMax, 10);
   const v = valorDoPreco(preco);
@@ -171,14 +175,13 @@ function renderCatalogo() {
 
   $("conteudo").innerHTML = `
     <section class="colecao">
-      <p class="sub">${esc(c.descricao)}</p>
+      ${c.descricao ? `<p class="sub">${esc(c.descricao)}</p>` : ""}
       <div class="grade">${pecas}</div>
     </section>`;
   $("conteudo").querySelectorAll(".card").forEach(card =>
     card.onclick = () => abrirModal(c.pecas[+card.dataset.p], c.nome, card));
 }
 
-// Anima a janela a partir do ponto exato em que a peça foi tocada
 function abrirModal(p, colNome, cardOrigem) {
   const pr = precoExibido(p.preco);
   $("m-foto").style.backgroundImage = p.foto ? `url('${p.foto}')` : "";
@@ -192,10 +195,8 @@ function abrirModal(p, colNome, cardOrigem) {
   $("m-wpp").href = `https://wa.me/${numero}?text=${msg}`;
 
   const r = cardOrigem.getBoundingClientRect();
-  const dx = (r.left + r.width / 2) - window.innerWidth / 2;
-  const dy = (r.top + r.height / 2) - window.innerHeight / 2;
-  $("caixa").style.setProperty("--dx", dx + "px");
-  $("caixa").style.setProperty("--dy", dy + "px");
+  $("caixa").style.setProperty("--dx", ((r.left + r.width / 2) - window.innerWidth / 2) + "px");
+  $("caixa").style.setProperty("--dy", ((r.top + r.height / 2) - window.innerHeight / 2) + "px");
 
   $("modal").classList.remove("fechando");
   $("modal").classList.add("aberto");
@@ -210,10 +211,14 @@ $("fechar").onclick = fecharModal;
 $("modal").onclick = (e) => { if (e.target.id === "modal") fecharModal(); };
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") fecharModal(); });
 
-// Carrega os dados publicados (dados.json). Cache desligado para mostrar sempre a versão mais nova.
-fetch("dados.json", { cache: "no-store" })
-  .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-  .then(d => { D = d; renderCatalogo(); })
+// Lê os dados atuais direto do servidor (sem cache)
+fetch(API_URL + "?acao=dados", { cache: "no-store" })
+  .then(r => r.json())
+  .then(res => {
+    if (!res.ok) throw new Error(res.erro);
+    D = res.dados;
+    renderCatalogo();
+  })
   .catch(() => {
     $("conteudo").innerHTML = `<p class="vazio">Não foi possível carregar o catálogo. Tente novamente em instantes.</p>`;
   });
